@@ -5,6 +5,8 @@ from langchain_core.messages import SystemMessage, HumanMessage
 
 import os
 from dotenv import load_dotenv
+from datetime import datetime, timezone, timedelta
+import hashlib
 
 # Import the system prompt from prompts module
 from src.prompts import SYSTEM_PROMPT
@@ -19,8 +21,6 @@ load_dotenv()
 from firebase_admin import firestore, initialize_app
 initialize_app()
 db = firestore.client()
-
-import hashlib
 
 class AgentState(TypedDict):
     messages: list
@@ -52,7 +52,6 @@ class AI_Agent:
         response = self.llm(messages)
         
         # Store the response in Firestore cache with a 1-day expiration
-        from datetime import timedelta
         db.collection("devops-agent-cache").document(cache_key).set({
             "response": response.content,
             "expires": datetime.now(timezone.utc) + timedelta(days=1)
