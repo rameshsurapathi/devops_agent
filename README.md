@@ -35,7 +35,7 @@ The DevOps AI Agent is a comprehensive solution that combines the power of Large
 
 ### ⚡ High-Performance Backend
 - **FastAPI**: Async Python web framework for high performance
-- **Redis Caching**: Response caching for improved speed
+- **Firestore Caching**: Cloud-based NoSQL database for response caching
 - **Rate Limiting**: Built-in protection against abuse
 - **Error Handling**: Comprehensive error management
 - **LangSmith Integration**: Advanced tracing and debugging
@@ -62,10 +62,8 @@ devops_agent/
 │   └── script.js            # Frontend JavaScript
 ├── 📁 __pycache__/          # Python bytecode cache
 ├── app.py                   # FastAPI application
-├── main.py                  # Application entry point
 ├── requirements.txt         # Python dependencies
 ├── pyproject.toml          # Modern Python project configuration
-├── start.sh                # Quick start script
 └── README.md               # Project documentation
 ```
 
@@ -75,7 +73,7 @@ devops_agent/
 
 - **Python 3.13+** installed on your system
 - **Google AI API Key** (for Gemini integration)
-- **Redis** (optional, for caching)
+- **Firebase Project** (for Firestore caching)
 
 ### Installation
 
@@ -106,12 +104,8 @@ devops_agent/
 
 4. **Start the application**
    ```bash
-   # Using the start script
-   chmod +x start.sh
-   ./start.sh
-   
-   # Or manually
-   python main.py
+   # Start the FastAPI server with uvicorn
+   uvicorn app:app --host 0.0.0.0 --port 8000 --reload
    ```
 
 5. **Access the application**
@@ -131,16 +125,20 @@ GOOGLE_API_KEY=your_google_api_key_here
 # LLM Model Configuration
 LLM_MODEL=gemini-1.5-flash
 
+# Firebase Configuration (Required for caching)
+FIREBASE_PROJECT_ID=your_firebase_project_id
+FIREBASE_PRIVATE_KEY_ID=your_private_key_id
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nyour_private_key_here\n-----END PRIVATE KEY-----\n"
+FIREBASE_CLIENT_EMAIL=your_service_account_email
+FIREBASE_CLIENT_ID=your_client_id
+FIREBASE_AUTH_URI=https://accounts.google.com/o/oauth2/auth
+FIREBASE_TOKEN_URI=https://oauth2.googleapis.com/token
+
 # LangSmith Configuration (Optional)
 LANGSMITH_API_KEY=your_langsmith_api_key
 LANGSMITH_ENDPOINT=https://api.smith.langchain.com
 LANGSMITH_PROJECT=devops-agent
 LANGSMITH_TRACING=true
-
-# Redis Configuration (Optional)
-REDIS_HOST=localhost
-REDIS_PORT=6379
-REDIS_DB=0
 
 # Application Settings
 PORT=8000
@@ -240,12 +238,16 @@ print(response.json()["response"])
 
 ### Response Caching
 
-The application implements intelligent caching using Redis:
+The application implements intelligent caching using Google Firestore:
 
 ```python
-# Cache responses for 24 hours
-cache_key = f"ai_response:{hashlib.sha256(user_message.encode()).hexdigest()}"
-redis_client.setex(cache_key, 86400, response.content)
+# Cache responses in Firestore with TTL
+cache_ref = db.collection('ai_responses').document(cache_key)
+cache_ref.set({
+    'response': response.content,
+    'timestamp': time.time(),
+    'ttl': 86400  # 24 hours
+})
 ```
 
 ### Rate Limiting
@@ -284,17 +286,17 @@ RUN pip install -r requirements.txt
 COPY . .
 EXPOSE 8000
 
-CMD ["python", "main.py"]
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
 ### Production Deployment
 
 ```bash
-# Using Gunicorn for production
-gunicorn -w 4 -k uvicorn.workers.UvicornWorker app:app --bind 0.0.0.0:8000
-
-# Or using Uvicorn directly
+# Start the application with uvicorn
 uvicorn app:app --host 0.0.0.0 --port 8000 --workers 4
+
+# For production with more options
+uvicorn app:app --host 0.0.0.0 --port 8000 --workers 4 --access-log --log-level info
 ```
 
 ### Environment Setup
@@ -302,7 +304,7 @@ uvicorn app:app --host 0.0.0.0 --port 8000 --workers 4
 ```bash
 # Production environment variables
 export GOOGLE_API_KEY="your-production-key"
-export REDIS_URL="redis://your-redis-instance:6379"
+export FIREBASE_PROJECT_ID="your-firebase-project"
 export PORT=8000
 export DEBUG=false
 ```
@@ -438,9 +440,9 @@ logging.basicConfig(
 Solution: Ensure GOOGLE_API_KEY is set in src/.env file
 ```
 
-**2. Redis Connection Error**
+**2. Firestore Connection Error**
 ```
-Solution: Install and start Redis, or disable caching in ai_agent.py
+Solution: Ensure Firebase credentials are properly configured in src/.env file
 ```
 
 **3. Port Already in Use**
@@ -457,9 +459,9 @@ Solution: Ensure static files are served correctly by FastAPI
 
 Enable debug mode for detailed error messages:
 
-```python
-# In main.py
-uvicorn.run(app, host="0.0.0.0", port=port, debug=True)
+```bash
+# Start with debug and reload enabled
+uvicorn app:app --host 0.0.0.0 --port 8000 --reload --log-level debug
 ```
 
 ## 📞 Support
@@ -477,7 +479,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **LangChain**: For the powerful AI framework
 - **FastAPI**: For the modern web framework
 - **Google AI**: For the Gemini model API
-- **Redis**: For efficient caching
+- **Google Firestore**: For efficient cloud-based caching
 - **DevOps Community**: For inspiration and best practices
 
 ---
