@@ -29,11 +29,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Expose the application port
+# Expose the application port (Google Cloud Run will set PORT env var)
 EXPOSE 8080
 
 # Command to run the application
-
-CMD ["uvicorn","app:app", "--host","0.0.0.0","-port","8080"]
+# Use the PORT environment variable provided by Google Cloud Run
+CMD ["sh", "-c", "uvicorn app:app --host 0.0.0.0 --port ${PORT:-8080}"]
 
 
