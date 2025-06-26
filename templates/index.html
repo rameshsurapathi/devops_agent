@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expert DevOps Engineer - AI Agent</title>
+    <link rel="stylesheet" href="../static/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <header class="header">
+            <div class="badge">
+                <i class="fas fa-check-circle"></i>
+                DevOps Excellence
+            </div>
+            <h1 class="main-title">Expert DevOps Engineer</h1>
+            <p class="subtitle">
+                Get expert guidance on CI/CD pipelines, Infrastructure as Code, containerization, and
+                automation. Specializing in Terraform, Kubernetes, Docker, Jenkins, and cloud
+                platforms.
+            </p>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <h2 class="section-title">Popular DevOps & CI/CD Questions</h2>
+            
+            <div class="cards-grid">
+                <!-- CI/CD Pipelines Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon cicd-icon">
+                            <i class="fas fa-code-branch"></i>
+                        </div>
+                        <h3 class="card-title">CI/CD Pipelines</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="question-item">
+                            <p>Design a complete CI/CD pipeline using Jenkins, Docker, and Kubernetes for a microservices application</p>
+                        </div>
+                        <div class="question-item">
+                            <p>Set up automated testing and deployment with GitHub Actions and Terraform for AWS infrastructure</p>
+                        </div>
+                        <div class="question-item">
+                            <p>Create a GitOps workflow using ArgoCD and Helm charts for Kubernetes deployments</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Infrastructure as Code Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon iac-icon">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <h3 class="card-title">Infrastructure as Code</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="question-item">
+                            <p>Build Infrastructure as Code using Terraform for multi-cloud deployment across AWS, Azure, and GCP</p>
+                        </div>
+                        <div class="question-item">
+                            <p>Design a scalable Kubernetes cluster with monitoring, logging, and security best practices</p>
+                        </div>
+                        <div class="question-item">
+                            <p>Implement blue-green deployment strategy with Docker containers and load balancers</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Automation Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon automation-icon">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h3 class="card-title">Automation</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="question-item">
+                            <p>Automate security scanning and compliance checks in CI/CD pipelines using tools like SonarQube and Trivy</p>
+                        </div>
+                        <div class="question-item">
+                            <p>Set up automated backup and disaster recovery for containerized applications</p>
+                        </div>
+                        <div class="question-item">
+                            <p>Create automated scaling policies for Kubernetes workloads based on custom metrics</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Interface -->
+            <div class="chat-section">
+                <div class="chat-container">
+                    <div class="chat-header">
+                        <h3>Ask Your DevOps Question</h3>
+                        <p>Get expert guidance on your DevOps challenges</p>
+                    </div>
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message bot-message">
+                            <div class="message-avatar">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="message-content">
+                                <p>Hello! I'm your DevOps AI Assistant. How can I help you today? You can ask me about CI/CD pipelines, Infrastructure as Code, containerization, automation, or any other DevOps related topics.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-input-container">
+                        <div class="chat-input-wrapper">
+                            <input type="text" id="chatInput" placeholder="Type your DevOps question here..." class="chat-input">
+                            <button id="sendButton" class="send-button">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../static/script.js"></script>
+</body>
+</html>
