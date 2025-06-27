@@ -145,7 +145,7 @@ class DevOpsAgent {
     }
 
     async callDevOpsAPI(message) {
-        const response = await fetch('/api/chat', {
+        const response = await fetch('api/chat', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
