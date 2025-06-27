@@ -54,7 +54,7 @@ class DevOpsAgent {
         this.showTypingIndicator();
         
         try {
-            // Simulate API call - replace with actual backend endpoint
+            // Call the DevOps API
             const response = await this.callDevOpsAPI(message);
             
             // Remove typing indicator
@@ -68,7 +68,7 @@ class DevOpsAgent {
         } catch (error) {
             console.error('Error calling DevOps API:', error);
             this.hideTypingIndicator();
-            this.addMessage('Sorry, I encountered an error. Please try again.', 'bot');
+            this.addMessage('Sorry, I\'m having trouble connecting to the server. Please try again later.', 'bot');
         }
     }
 
@@ -145,164 +145,20 @@ class DevOpsAgent {
     }
 
     async callDevOpsAPI(message) {
-        try {
-            // Check if we're running with a backend server
-            const response = await fetch('/api/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ message: message })
-            });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const data = await response.json();
-            return data.response || 'Sorry, I couldn\'t process your request.';
-        } catch (error) {
-            console.warn('Backend not available, using mock responses:', error.message);
-            // Simulate API delay for better UX
-            await this.delay(1000 + Math.random() * 2000);
-            // Fallback to mock response if API fails or no backend
-            return this.generateMockResponse(message);
-        }
-    }
-
-    generateMockResponse(message) {
-        const lowerMessage = message.toLowerCase();
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ message: message })
+        });
         
-        if (lowerMessage.includes('jenkins') || lowerMessage.includes('ci/cd') || lowerMessage.includes('pipeline')) {
-            return `Great question about CI/CD! Here's a comprehensive approach:
-
-**Jenkins Pipeline Setup:**
-1. Create a \`Jenkinsfile\` in your repository root
-2. Configure stages: Build → Test → Security Scan → Deploy
-3. Use Docker for consistent environments
-4. Set up parallel testing for faster feedback
-
-**Key Best Practices:**
-- Use declarative pipelines for better maintainability
-- Implement proper error handling and notifications
-- Set up pipeline as code for version control
-- Configure automated rollback mechanisms
-
-Would you like me to elaborate on any specific aspect of the CI/CD pipeline?`;
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        if (lowerMessage.includes('terraform') || lowerMessage.includes('infrastructure') || lowerMessage.includes('iac')) {
-            return `Excellent! Infrastructure as Code with Terraform is crucial for modern DevOps:
-
-**Terraform Best Practices:**
-1. **Module Structure**: Organize code into reusable modules
-2. **State Management**: Use remote state with S3 + DynamoDB
-3. **Environment Separation**: Use workspaces or separate state files
-4. **Security**: Store sensitive data in vault/secrets manager
-
-**Multi-Cloud Strategy:**
-- Use provider-agnostic modules where possible
-- Implement consistent tagging and naming conventions
-- Set up cross-cloud networking and security policies
-- Monitor costs across all cloud providers
-
-Need help with a specific Terraform configuration or multi-cloud setup?`;
-        }
-        
-        if (lowerMessage.includes('kubernetes') || lowerMessage.includes('k8s') || lowerMessage.includes('container')) {
-            return `Kubernetes deployment strategies are essential for scalable applications:
-
-**Container Orchestration Setup:**
-1. **Cluster Design**: Multi-node setup with proper resource allocation
-2. **Networking**: Implement service mesh (Istio/Linkerd) for advanced traffic management
-3. **Storage**: Configure persistent volumes and storage classes
-4. **Security**: RBAC, network policies, and pod security standards
-
-**Deployment Patterns:**
-- **Blue-Green**: Zero-downtime deployments
-- **Canary**: Gradual rollout with traffic splitting
-- **Rolling Updates**: Default Kubernetes strategy
-
-**Monitoring Stack:**
-- Prometheus + Grafana for metrics
-- ELK Stack for centralized logging
-- Jaeger for distributed tracing
-
-What specific Kubernetes challenge are you facing?`;
-        }
-        
-        if (lowerMessage.includes('docker') || lowerMessage.includes('containerization')) {
-            return `Docker containerization is the foundation of modern application deployment:
-
-**Docker Best Practices:**
-1. **Multi-stage builds** to reduce image size
-2. **Security scanning** with tools like Trivy or Snyk
-3. **Proper layer caching** for faster builds
-4. **Non-root user** execution for security
-
-**Container Registry Strategy:**
-- Use private registries for production images
-- Implement image signing and vulnerability scanning
-- Set up automated cleanup policies
-- Configure content trust for image verification
-
-**Sample Dockerfile optimization:**
-\`\`\`dockerfile
-FROM node:18-alpine AS builder
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-
-FROM node:18-alpine AS runtime
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nextjs -u 1001
-COPY --from=builder /app/node_modules ./node_modules
-USER nextjs
-\`\`\`
-
-Would you like help optimizing a specific Dockerfile?`;
-        }
-        
-        if (lowerMessage.includes('automation') || lowerMessage.includes('security') || lowerMessage.includes('monitoring')) {
-            return `Automation and security are critical for robust DevOps practices:
-
-**Security Automation:**
-1. **SAST/DAST**: Integrate security scanning in pipelines
-2. **Compliance**: Automated policy enforcement with OPA
-3. **Secrets Management**: Vault, AWS Secrets Manager, or Azure Key Vault
-4. **Vulnerability Management**: Regular scanning and patch automation
-
-**Monitoring & Alerting:**
-- **Infrastructure**: Prometheus, CloudWatch, Azure Monitor
-- **Applications**: APM tools like Datadog, New Relic
-- **Logs**: Centralized logging with correlation IDs
-- **Synthetic Monitoring**: Proactive health checks
-
-**Backup & DR Automation:**
-- Automated database backups with point-in-time recovery
-- Cross-region replication for disaster recovery
-- Regular DR testing and validation
-- Infrastructure backup using Terraform state
-
-What specific automation challenge would you like to address?`;
-        }
-        
-        // Default response
-        return `I'm here to help with your DevOps questions! I specialize in:
-
-🔧 **CI/CD Pipelines** - Jenkins, GitHub Actions, GitLab CI
-🏗️ **Infrastructure as Code** - Terraform, CloudFormation, Pulumi  
-🐳 **Containerization** - Docker, Kubernetes, Container Registries
-☁️ **Cloud Platforms** - AWS, Azure, GCP best practices
-🔒 **Security & Compliance** - DevSecOps, policy automation
-📊 **Monitoring & Observability** - Prometheus, Grafana, ELK Stack
-🚀 **Automation** - Ansible, Puppet, Chef configuration management
-
-Please feel free to ask about any specific DevOps challenge you're facing. I can provide detailed guidance, code examples, and best practices!`;
-    }
-
-    delay(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
+        const data = await response.json();
+        return data.response || 'Sorry, I couldn\'t process your request.';
     }
 
     scrollToBottom() {
