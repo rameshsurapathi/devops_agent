@@ -164,6 +164,9 @@ class DevOpsAgent {
         
         console.log('Making POST request to:', apiPath);
         console.log('Request body:', JSON.stringify({ message: message }));
+        console.log('Base path:', this.basePath);
+        console.log('Current URL:', window.location.href);
+        console.log('Expected Cloud Run URL would be: https://devops-agent-948325778469.northamerica-northeast2.run.app/api/chat');
         
         const response = await fetch(apiPath, {
             method: 'POST',
@@ -173,7 +176,16 @@ class DevOpsAgent {
             body: JSON.stringify({ message: message })
         });
         
+        console.log('Response status:', response.status);
+        console.log('Response headers:', [...response.headers.entries()]);
+        
         if (!response.ok) {
+            try {
+                const errorText = await response.text();
+                console.log('Error response body:', errorText);
+            } catch (e) {
+                console.log('Could not read error response body');
+            }
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         
