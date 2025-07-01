@@ -35,28 +35,45 @@ class AI_Agent:
     def get_response(self, user_message: str) -> str:
         # Use a hash of the user message as the cache key
         cache_key = f"ai_response:{hashlib.sha256(user_message.encode()).hexdigest()}"
-        cached = db.collection("devops-agent-cache").document(cache_key).get()
-        if cached.exists:
-            data = cached.to_dict()
-            expires = data.get("expires")
-            if expires and expires > datetime.now(timezone.utc):
-                return data.get("response")
-            else:
-                # Optionally delete expired cache
-                db.collection("devops-agent-cache").document(cache_key).delete()
+        
+        # Try to get from cache first
+        try:
+            cached = db.collection("devops-agent-cache").document(cache_key).get()
+            if cached.exists:
+                data = cached.to_dict()
+                expires = data.get("expires")
+                if expires and expires > datetime.now(timezone.utc):
+                    return data.get("response")
+                else:
+                    # Optionally delete expired cache
+                    try:
+                        db.collection("devops-agent-cache").document(cache_key).delete()
+                    except Exception as e:
+                        print(f"Warning: Failed to delete expired cache: {e}")
+        except Exception as e:
+            print(f"Warning: Failed to read from cache: {e}")
+        
         # Compose messages for the LLM
         messages = [
             SystemMessage(content=self.system_prompt),
             HumanMessage(content=user_message)
         ]
-        response = self.llm(messages)
         
-        # Store the response in Firestore cache with a 1-day expiration
-        db.collection("devops-agent-cache").document(cache_key).set({
-            "response": response.content,
-            "expires": datetime.now(timezone.utc) + timedelta(days=1)
-        })
-        return response.content
+        # Get response from LLM
+        response = self.llm(messages)
+        response_content = response.content
+        
+        # Try to store the response in Firestore cache (non-blocking)
+        try:
+            db.collection("devops-agent-cache").document(cache_key).set({
+                "response": response_content,
+                "expires": datetime.now(timezone.utc) + timedelta(days=1)
+            })
+        except Exception as e:
+            print(f"Warning: Failed to cache response: {e}")
+            # Don't fail the entire request if caching fails
+        
+        return response_content
 
 def main():
 

@@ -58,17 +58,30 @@ async def chat_endpoint(request: Request, chat: ChatRequest):
     rate_limit_data[client_ip].append(now)
 
     try:
+        print(f"Processing request from {client_ip}: {chat.message[:50]}...")
+        
         # Use AI agent to generate response
         api_key = os.getenv("GOOGLE_API_KEY")
         if not api_key:
+            print("Error: GOOGLE_API_KEY not found")
             raise HTTPException(status_code=500, detail="GOOGLE_API_KEY not found in environment variables.")
         
+        print("Creating AI agent...")
         agent = AI_Agent(api_key)
+        
+        print("Calling get_response...")
         response = agent.get_response(chat.message)
+        
+        print(f"Response generated successfully: {len(response)} characters")
+        
         return JSONResponse({
             "response": response
         })
     except Exception as e:
-        print(f"Error in chat endpoint: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+        error_msg = str(e)
+        print(f"Error in chat endpoint: {error_msg}")
+        print(f"Error type: {type(e).__name__}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Internal server error: {error_msg}")
 
