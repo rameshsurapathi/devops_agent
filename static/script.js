@@ -162,12 +162,6 @@ class DevOpsAgent {
         // Use dynamic base path for API calls
         const apiPath = `${this.basePath}api/chat`;
         
-        console.log('Making POST request to:', apiPath);
-        console.log('Request body:', JSON.stringify({ message: message }));
-        console.log('Base path:', this.basePath);
-        console.log('Current URL:', window.location.href);
-        console.log('Expected Cloud Run URL would be: https://devops-agent-948325778469.northamerica-northeast2.run.app/api/chat');
-        
         const response = await fetch(apiPath, {
             method: 'POST',
             headers: {
@@ -177,7 +171,7 @@ class DevOpsAgent {
         });
         
         console.log('Response status:', response.status);
-        console.log('Response headers:', [...response.headers.entries()]);
+        console.log('Response content-length:', response.headers.get('content-length'));
         
         if (!response.ok) {
             try {
@@ -190,6 +184,7 @@ class DevOpsAgent {
         }
         
         const data = await response.json();
+        console.log('Response data size:', JSON.stringify(data).length, 'characters');
         return data.response || 'Sorry, I couldn\'t process your request.';
     }
 

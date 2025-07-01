@@ -74,9 +74,16 @@ async def chat_endpoint(request: Request, chat: ChatRequest):
         
         print(f"Response generated successfully: {len(response)} characters")
         
-        return JSONResponse({
+        # Handle large responses more gracefully
+        json_response = JSONResponse({
             "response": response
         })
+        
+        # Add headers to help with large responses
+        json_response.headers["Cache-Control"] = "no-cache"
+        json_response.headers["Connection"] = "keep-alive"
+        
+        return json_response
     except Exception as e:
         error_msg = str(e)
         print(f"Error in chat endpoint: {error_msg}")
