@@ -6,8 +6,22 @@ class DevOpsAgent {
         this.chatInput = document.getElementById('chatInput');
         this.sendButton = document.getElementById('sendButton');
         
+        // Set up dynamic base path for API calls
+        this.basePath = this.getBasePath();
+        
         this.initEventListeners();
         this.setupQuestionCards();
+    }
+
+    getBasePath() {
+        // Use the base path stored by the HTML script, or calculate it
+        if (window.AI_AGENT_BASE_PATH) {
+            return window.AI_AGENT_BASE_PATH;
+        }
+        
+        // Fallback: Get the current path and ensure it ends with /
+        const currentPath = window.location.pathname;
+        return currentPath.endsWith('/') ? currentPath : currentPath + '/';
     }
 
     initEventListeners() {
@@ -145,7 +159,10 @@ class DevOpsAgent {
     }
 
     async callDevOpsAPI(message) {
-        const response = await fetch('api/chat', {
+        // Use dynamic base path for API calls
+        const apiPath = `${this.basePath}api/chat`;
+        
+        const response = await fetch(apiPath, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
