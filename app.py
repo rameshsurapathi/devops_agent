@@ -58,21 +58,13 @@ async def chat_endpoint(request: Request, chat: ChatRequest):
     rate_limit_data[client_ip].append(now)
 
     try:
-        print(f"Processing request from {client_ip}: {chat.message[:50]}...")
-        
         # Use AI agent to generate response
         api_key = os.getenv("GOOGLE_API_KEY")
         if not api_key:
-            print("Error: GOOGLE_API_KEY not found")
-            raise HTTPException(status_code=500, detail="GOOGLE_API_KEY not found in environment variables.")
+            raise HTTPException(status_code=500, detail="API configuration error. Please check server configuration.")
         
-        print("Creating AI agent...")
         agent = AI_Agent(api_key)
-        
-        print("Calling get_response...")
         response = agent.get_response(chat.message)
-        
-        print(f"Response generated successfully: {len(response)} characters")
         
         # Handle large responses more gracefully
         json_response = JSONResponse({
@@ -87,8 +79,14 @@ async def chat_endpoint(request: Request, chat: ChatRequest):
     except Exception as e:
         error_msg = str(e)
         print(f"Error in chat endpoint: {error_msg}")
-        print(f"Error type: {type(e).__name__}")
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Internal server error: {error_msg}")
+        
+        # Don't expose internal errors to client in production
+        if "API" in error_msg or "key" in error_msg.lower():
+            detail = "API configuration error. Please check server configuration."
+        elif "rate limit" in error_msg.lower():
+            detail = "Rate limit exceeded. Please try again later."
+        else:
+            detail = "Internal server error. Please try again later."
+            
+        raise HTTPException(status_code=500, detail=detail)
 

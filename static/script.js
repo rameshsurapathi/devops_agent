@@ -163,8 +163,6 @@ class DevOpsAgent {
         // Next.js rewrites are unreliable for large responses and high API traffic
         const apiUrl = 'https://devops-agent-948325778469.northamerica-northeast2.run.app/api/chat';
         
-        console.log('Making API call to:', apiUrl);
-        
         const response = await fetch(apiUrl, {
             method: 'POST',
             headers: {
@@ -173,21 +171,11 @@ class DevOpsAgent {
             body: JSON.stringify({ message: message })
         });
         
-        console.log('Response status:', response.status);
-        console.log('Response content-length:', response.headers.get('content-length'));
-        
         if (!response.ok) {
-            try {
-                const errorText = await response.text();
-                console.log('Error response body:', errorText);
-            } catch (e) {
-                console.log('Could not read error response body');
-            }
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         
         const data = await response.json();
-        console.log('Response data size:', JSON.stringify(data).length, 'characters');
         return data.response || 'Sorry, I couldn\'t process your request.';
     }
 
