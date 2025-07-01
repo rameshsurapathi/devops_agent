@@ -159,10 +159,13 @@ class DevOpsAgent {
     }
 
     async callDevOpsAPI(message) {
-        // Use dynamic base path for API calls
-        const apiPath = `${this.basePath}api/chat`;
+        // Always use direct Cloud Run URL for API calls
+        // Next.js rewrites are unreliable for large responses and high API traffic
+        const apiUrl = 'https://devops-agent-948325778469.northamerica-northeast2.run.app/api/chat';
         
-        const response = await fetch(apiPath, {
+        console.log('Making API call to:', apiUrl);
+        
+        const response = await fetch(apiUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
