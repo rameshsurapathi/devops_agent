@@ -39,6 +39,13 @@ class ChatRequest(BaseModel):
 async def root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
+@app.get("/api/chat")
+async def chat_get_endpoint():
+    return JSONResponse({
+        "error": "This endpoint only accepts POST requests",
+        "message": "Please send a POST request with a JSON body containing 'message' field"
+    })
+
 @app.post("/api/chat")
 async def chat_endpoint(request: Request, chat: ChatRequest):
     client_ip = request.client.host

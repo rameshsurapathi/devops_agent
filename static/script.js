@@ -162,6 +162,9 @@ class DevOpsAgent {
         // Use dynamic base path for API calls
         const apiPath = `${this.basePath}api/chat`;
         
+        console.log('Making POST request to:', apiPath);
+        console.log('Request body:', JSON.stringify({ message: message }));
+        
         const response = await fetch(apiPath, {
             method: 'POST',
             headers: {
