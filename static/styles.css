@@ -248,11 +248,14 @@ body {
 }
 
 .message-content {
-    flex: 1;
     background: #f8fafc;
     padding: 1rem;
     border-radius: 12px;
     border: 1px solid #e2e8f0;
+}
+
+.message-content-wrapper {
+    flex: 1;
 }
 
 .user-message .message-content {
@@ -264,6 +267,52 @@ body {
     color: #374151;
     font-size: 0.9rem;
     line-height: 1.5;
+}
+
+/* Message Actions (PDF Button) */
+.message-actions {
+    margin-top: 8px;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.user-message .message-actions {
+    justify-content: flex-end;
+}
+
+.save-pdf-btn {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);
+    font-weight: 500;
+    min-height: auto;
+    height: auto;
+    width: auto;
+    max-width: 140px;
+}
+
+.save-pdf-btn:hover {
+    background: linear-gradient(135deg, #b91c1c, #991b1b);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(220, 38, 38, 0.3);
+}
+
+.save-pdf-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);
+}
+
+.save-pdf-btn i {
+    font-size: 11px;
 }
 
 .chat-input-container {
@@ -345,6 +394,17 @@ body {
         transform: translateY(-10px);
         opacity: 1;
     }
+}
+
+/* Toast Animations */
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideOut {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
 }
 
 /* Responsive Design */

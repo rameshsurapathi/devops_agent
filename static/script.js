@@ -80,6 +80,9 @@ class DevOpsAgent {
         avatarDiv.classList.add('message-avatar');
         avatarDiv.innerHTML = sender === 'user' ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
         
+        const contentWrapper = document.createElement('div');
+        contentWrapper.classList.add('message-content-wrapper');
+        
         const contentDiv = document.createElement('div');
         contentDiv.classList.add('message-content');
         
@@ -87,8 +90,7 @@ class DevOpsAgent {
         const formattedContent = this.formatMessage(content);
         contentDiv.innerHTML = formattedContent;
         
-        messageDiv.appendChild(avatarDiv);
-        messageDiv.appendChild(contentDiv);
+        contentWrapper.appendChild(contentDiv);
         
         // Add save to PDF button for bot responses
         if (sender === 'bot') {
@@ -105,8 +107,11 @@ class DevOpsAgent {
             });
             
             actionDiv.appendChild(saveButton);
-            messageDiv.appendChild(actionDiv);
+            contentWrapper.appendChild(actionDiv);
         }
+        
+        messageDiv.appendChild(avatarDiv);
+        messageDiv.appendChild(contentWrapper);
         
         this.chatMessages.appendChild(messageDiv);
         
@@ -354,62 +359,6 @@ function showToast(message) {
         setTimeout(() => toast.remove(), 300);
     }, 3000);
 }
-
-// Add toast animations and save button styles to CSS
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideIn {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-    }
-    
-    @keyframes slideOut {
-        from { transform: translateX(0); opacity: 1; }
-        to { transform: translateX(100%); opacity: 0; }
-    }
-    
-    .message-actions {
-        margin-top: 8px;
-        display: flex;
-        justify-content: flex-end;
-        padding-left: 60px; /* Account for avatar space */
-    }
-    
-    .save-pdf-btn {
-        background: linear-gradient(135deg, #dc2626, #b91c1c);
-        color: white;
-        border: none;
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 11px;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        transition: all 0.2s ease;
-        box-shadow: 0 1px 3px rgba(220, 38, 38, 0.3);
-        min-height: auto;
-        height: auto;
-        width: auto;
-        max-width: 120px;
-    }
-    
-    .save-pdf-btn:hover {
-        background: linear-gradient(135deg, #b91c1c, #991b1b);
-        transform: translateY(-1px);
-        box-shadow: 0 2px 6px rgba(220, 38, 38, 0.4);
-    }
-    
-    .save-pdf-btn:active {
-        transform: translateY(0);
-        box-shadow: 0 1px 3px rgba(220, 38, 38, 0.3);
-    }
-    
-    .save-pdf-btn i {
-        font-size: 10px;
-    }
-`;
-document.head.appendChild(style);
 
 // Initialize the DevOps Agent when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
