@@ -78,12 +78,18 @@ class DevOpsAgent {
         indicator.innerHTML = `
             <div style="text-align: center; padding: 10px; background: #f0f9ff; border-radius: 8px; margin-bottom: 1rem; font-size: 0.9rem; color: #0369a1;">
                 <i class="fas fa-history"></i> Previous conversations loaded
-                <button class="clear-history-btn" onclick="devopsAgent.clearChatHistory()" style="margin-left: 10px; padding: 2px 8px; background: #dc2626; color: white; border: none; border-radius: 4px; font-size: 0.8rem; cursor: pointer;">
+                <button class="new-chat-btn" onclick="devopsAgent.startNewChat()" style="margin-left: 10px; padding: 2px 8px; background: #059669; color: white; border: none; border-radius: 4px; font-size: 0.8rem; cursor: pointer;">
                     New Chat
                 </button>
             </div>
         `;
         this.chatMessages.insertBefore(indicator, this.chatMessages.firstChild);
+    }
+
+    startNewChat() {
+        // Just clear the chat view without deleting from database
+        this.chatMessages.innerHTML = '';
+        showToast('Started new chat session!');
     }
 
     async clearChatHistory() {
@@ -207,6 +213,7 @@ class DevOpsAgent {
         // Chat history buttons
         const viewHistoryBtn = document.getElementById('viewHistoryBtn');
         const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+        const newChatBtn = document.getElementById('newChatBtn');
         
         if (viewHistoryBtn) {
             viewHistoryBtn.addEventListener('click', () => this.showChatHistoryModal());
@@ -214,6 +221,10 @@ class DevOpsAgent {
         
         if (clearHistoryBtn) {
             clearHistoryBtn.addEventListener('click', () => this.clearChatHistory());
+        }
+        
+        if (newChatBtn) {
+            newChatBtn.addEventListener('click', () => this.startNewChat());
         }
     }
 

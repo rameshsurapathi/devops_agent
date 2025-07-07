@@ -448,6 +448,14 @@ body {
     box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
 }
 
+.history-btn.new-chat-btn {
+    background: #059669;
+}
+
+.history-btn.new-chat-btn:hover {
+    background: #047857;
+}
+
 .history-btn i {
     font-size: 13px;
 }
