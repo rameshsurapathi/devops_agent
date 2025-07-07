@@ -18,11 +18,16 @@ from src.langsmith_debug import LANGSMITH_API_KEY,LANGSMITH_ENDPOINT,LANGSMITH_P
 load_dotenv()
 
 # setting up Firestore for caching
-from firebase_admin import firestore, initialize_app
-# Initialize Firebase Admin SDK
-initialize_app()
-# Initialize Firestore client
-db = firestore.client()
+try:
+    from firebase_admin import firestore, initialize_app
+    # Initialize Firebase Admin SDK
+    initialize_app()
+    # Initialize Firestore client
+    db = firestore.client()
+    print("Firebase initialized successfully")
+except Exception as e:
+    print(f"Firebase initialization error: {e}")
+    db = None
 
 class AgentState(TypedDict):
     messages: list
@@ -44,21 +49,22 @@ class AI_Agent:
         
         # Try to get from cache first
         try:
-            cached = db.collection("devops-agent-cache").document(cache_key).get()
-            if cached.exists:
-                data = cached.to_dict()
-                expires = data.get("expires")
-                if expires and expires > datetime.now(timezone.utc):
-                    # Still save to chat history even if cached
-                    if user_id:
-                        self.save_to_chat_history(user_id, user_message, data.get("response"))
-                    return data.get("response")
-                else:
-                    # Delete expired cache
-                    try:
-                        db.collection("devops-agent-cache").document(cache_key).delete()
-                    except Exception as e:
-                        print(f"Warning: Failed to delete expired cache: {e}")
+            if db is not None:
+                cached = db.collection("devops-agent-cache").document(cache_key).get()
+                if cached.exists:
+                    data = cached.to_dict()
+                    expires = data.get("expires")
+                    if expires and expires > datetime.now(timezone.utc):
+                        # Still save to chat history even if cached
+                        if user_id:
+                            self.save_to_chat_history(user_id, user_message, data.get("response"))
+                        return data.get("response")
+                    else:
+                        # Delete expired cache
+                        try:
+                            db.collection("devops-agent-cache").document(cache_key).delete()
+                        except Exception as e:
+                            print(f"Warning: Failed to delete expired cache: {e}")
         except Exception as e:
             print(f"Warning: Failed to read from cache: {e}")
         
@@ -167,6 +173,10 @@ class AI_Agent:
     def get_user_chat_history(self, user_id: str, limit: int = 10) -> list:
         """Get full chat history for frontend display"""
         try:
+            if db is None:
+                print("Warning: Firebase not initialized, returning empty history")
+                return []
+                
             chat_ref = db.collection("chat-history").document(user_id)
             chat_data = chat_ref.get()
             

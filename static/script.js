@@ -126,13 +126,19 @@ class DevOpsAgent {
             });
 
             console.log('Chat history response:', response);
+            console.log('Response status:', response.status);
+            console.log('Response status text:', response.statusText);
             
             if (response.ok) {
                 const data = await response.json();
                 const history = data.history || [];
+                console.log('Chat history data:', history);
                 this.displayChatHistoryModal(history);
             } else {
-                showToast('Failed to load chat history. Please try again.');
+                // Get the error details from the response
+                const errorText = await response.text();
+                console.error('Error response:', errorText);
+                showToast(`Failed to load chat history. Status: ${response.status} - ${response.statusText}`);
             }
         } catch (error) {
             console.error('Error loading chat history:', error);
