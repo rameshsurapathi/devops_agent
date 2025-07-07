@@ -92,26 +92,19 @@ async def chat_endpoint(request: Request, chat: ChatRequest):
 async def get_chat_history(request: Request, chat_history: ChatHistoryRequest):
     """Get user's chat history"""
     try:
-        print(f"Chat history request - User ID: {chat_history.user_id}, Limit: {chat_history.limit}")
-        
         api_key = os.getenv("GOOGLE_API_KEY")
         if not api_key:
-            print("GOOGLE_API_KEY not found")
             raise HTTPException(status_code=500, detail="API configuration error")
         
         agent = AI_Agent(api_key)
         history = agent.get_user_chat_history(chat_history.user_id, chat_history.limit)
-        
-        print(f"Retrieved {len(history)} conversations for user {chat_history.user_id}")
         
         return JSONResponse({
             "history": history
         })
     except Exception as e:
         print(f"Error in chat history endpoint: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Failed to retrieve chat history: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve chat history")
 
 @app.delete("/api/chat-history")
 async def clear_chat_history(request: Request, chat_history: ChatHistoryRequest):

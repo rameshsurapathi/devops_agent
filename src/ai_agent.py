@@ -24,7 +24,6 @@ try:
     initialize_app()
     # Initialize Firestore client
     db = firestore.client()
-    print("Firebase initialized successfully")
 except Exception as e:
     print(f"Firebase initialization error: {e}")
     db = None
@@ -106,7 +105,6 @@ class AI_Agent:
         """Save chat interaction to user's history"""
         try:
             if db is None:
-                print("Warning: Firebase not initialized, skipping chat history save")
                 return
                 
             chat_ref = db.collection("chat-history").document(user_id)
@@ -147,7 +145,6 @@ class AI_Agent:
         """Get recent chat history for context"""
         try:
             if db is None:
-                print("Warning: Firebase not initialized, returning empty context")
                 return ""
                 
             chat_ref = db.collection("chat-history").document(user_id)
@@ -185,7 +182,6 @@ class AI_Agent:
         """Get full chat history for frontend display"""
         try:
             if db is None:
-                print("Warning: Firebase not initialized, returning empty history")
                 return []
                 
             chat_ref = db.collection("chat-history").document(user_id)

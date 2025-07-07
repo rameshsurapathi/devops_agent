@@ -79,7 +79,7 @@ class DevOpsAgent {
             <div style="text-align: center; padding: 10px; background: #f0f9ff; border-radius: 8px; margin-bottom: 1rem; font-size: 0.9rem; color: #0369a1;">
                 <i class="fas fa-history"></i> Previous conversations loaded
                 <button class="clear-history-btn" onclick="devopsAgent.clearChatHistory()" style="margin-left: 10px; padding: 2px 8px; background: #dc2626; color: white; border: none; border-radius: 4px; font-size: 0.8rem; cursor: pointer;">
-                    Clear History
+                    New Chat
                 </button>
             </div>
         `;
@@ -113,7 +113,6 @@ class DevOpsAgent {
 
     async showChatHistoryModal() {
         try {
-            console.log('Loading full chat history for modal...');
             const response = await fetch('https://devops-agent-948325778469.northamerica-northeast2.run.app/api/chat-history', {
                 method: 'POST',
                 headers: {
@@ -124,21 +123,15 @@ class DevOpsAgent {
                     limit: 50  // Request more history for the modal
                 })
             });
-
-            console.log('Chat history response:', response);
-            console.log('Response status:', response.status);
-            console.log('Response status text:', response.statusText);
             
             if (response.ok) {
                 const data = await response.json();
                 const history = data.history || [];
-                console.log('Chat history data:', history);
                 this.displayChatHistoryModal(history);
             } else {
-                // Get the error details from the response
                 const errorText = await response.text();
                 console.error('Error response:', errorText);
-                showToast(`Failed to load chat history. Status: ${response.status} - ${response.statusText}`);
+                showToast('Failed to load chat history. Please try again.');
             }
         } catch (error) {
             console.error('Error loading chat history:', error);
