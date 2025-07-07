@@ -78,9 +78,6 @@ class DevOpsAgent {
         indicator.innerHTML = `
             <div style="text-align: center; padding: 10px; background: #f0f9ff; border-radius: 8px; margin-bottom: 1rem; font-size: 0.9rem; color: #0369a1;">
                 <i class="fas fa-history"></i> Previous conversations loaded
-                <button class="new-chat-btn" onclick="devopsAgent.startNewChat()" style="margin-left: 10px; padding: 2px 8px; background: #059669; color: white; border: none; border-radius: 4px; font-size: 0.8rem; cursor: pointer;">
-                    New Chat
-                </button>
             </div>
         `;
         this.chatMessages.insertBefore(indicator, this.chatMessages.firstChild);
@@ -160,13 +157,20 @@ class DevOpsAgent {
                 <div class="modal-body">
                     ${history.length === 0 ? 
                         '<p class="no-history">No chat history found.</p>' : 
-                        history.map(conversation => `
+                        history.map((conversation, index) => `
                             <div class="history-conversation">
                                 <div class="history-message user">
-                                    <strong>You:</strong> ${conversation.user_message}
+                                    <div class="user-prompt-header">
+                                        <strong>You:</strong> ${conversation.user_message}
+                                        <button class="show-response-btn" onclick="devopsAgent.toggleResponse(${index})" data-conversation-index="${index}">
+                                            <i class="fas fa-chevron-down"></i> Show Response
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="history-message bot">
-                                    <strong>AI:</strong> ${conversation.bot_response}
+                                <div class="bot-response-container" id="response-${index}" style="display: none;">
+                                    <div class="history-message bot">
+                                        <strong>AI:</strong> <span class="response-content">${conversation.bot_response}</span>
+                                    </div>
                                 </div>
                                 <div class="history-timestamp">
                                     ${new Date(conversation.timestamp).toLocaleString()}
@@ -191,6 +195,21 @@ class DevOpsAgent {
                 modal.remove();
             }
         });
+    }
+
+    toggleResponse(conversationIndex) {
+        const responseContainer = document.getElementById(`response-${conversationIndex}`);
+        const button = document.querySelector(`[data-conversation-index="${conversationIndex}"]`);
+        
+        if (responseContainer.style.display === 'none') {
+            // Show response
+            responseContainer.style.display = 'block';
+            button.innerHTML = '<i class="fas fa-chevron-up"></i> Hide Response';
+        } else {
+            // Hide response
+            responseContainer.style.display = 'none';
+            button.innerHTML = '<i class="fas fa-chevron-down"></i> Show Response';
+        }
     }
 
     initEventListeners() {

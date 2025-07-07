@@ -676,6 +676,60 @@ body {
     background: #4b5563;
 }
 
+/* Collapsible Response Styles for Chat History */
+.user-prompt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.show-response-btn {
+    background: #059669;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-left: 10px;
+    white-space: nowrap;
+}
+
+.show-response-btn:hover {
+    background: #047857;
+}
+
+.show-response-btn i {
+    margin-right: 4px;
+}
+
+.bot-response-container {
+    margin-top: 0.5rem;
+    padding-left: 1rem;
+    border-left: 3px solid #059669;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        max-height: 0;
+        overflow: hidden;
+    }
+    to {
+        opacity: 1;
+        max-height: 1000px;
+        overflow: visible;
+    }
+}
+
+.response-content {
+    line-height: 1.5;
+    word-wrap: break-word;
+}
+
 /* Responsive modal */
 @media (max-width: 768px) {
     .chat-history-modal {
