@@ -111,6 +111,80 @@ class DevOpsAgent {
         }
     }
 
+    async showChatHistoryModal() {
+        try {
+            const response = await fetch('https://devops-agent-948325778469.northamerica-northeast2.run.app/api/chat-history', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    user_id: this.userId,
+                    limit: 50  // Request more history for the modal
+                })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                const history = data.history || [];
+                this.displayChatHistoryModal(history);
+            } else {
+                showToast('Failed to load chat history. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error loading chat history:', error);
+            showToast('Failed to load chat history. Please try again.');
+        }
+    }
+
+    displayChatHistoryModal(history) {
+        // Create modal
+        const modal = document.createElement('div');
+        modal.className = 'chat-history-modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Chat History</h3>
+                    <button class="close-modal" onclick="this.parentElement.parentElement.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    ${history.length === 0 ? 
+                        '<p class="no-history">No chat history found.</p>' : 
+                        history.map(conversation => `
+                            <div class="history-conversation">
+                                <div class="history-message user">
+                                    <strong>You:</strong> ${conversation.user_message}
+                                </div>
+                                <div class="history-message bot">
+                                    <strong>AI:</strong> ${conversation.bot_response}
+                                </div>
+                                <div class="history-timestamp">
+                                    ${new Date(conversation.timestamp).toLocaleString()}
+                                </div>
+                            </div>
+                        `).join('')
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button class="modal-btn close-btn" onclick="this.parentElement.parentElement.parentElement.remove()">
+                        Close
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Close modal when clicking outside
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
+
     initEventListeners() {
         // Send button click
         this.sendButton.addEventListener('click', () => this.sendMessage());
@@ -127,6 +201,18 @@ class DevOpsAgent {
             this.chatInput.style.height = 'auto';
             this.chatInput.style.height = this.chatInput.scrollHeight + 'px';
         });
+
+        // Chat history buttons
+        const viewHistoryBtn = document.getElementById('viewHistoryBtn');
+        const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+        
+        if (viewHistoryBtn) {
+            viewHistoryBtn.addEventListener('click', () => this.showChatHistoryModal());
+        }
+        
+        if (clearHistoryBtn) {
+            clearHistoryBtn.addEventListener('click', () => this.clearChatHistory());
+        }
     }
 
     setupQuestionCards() {
