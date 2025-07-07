@@ -34,6 +34,11 @@ rate_limit_data = defaultdict(list)
 # Define the request model for chat messages
 class ChatRequest(BaseModel):
     message: str
+    user_id: str = None  # Optional user ID for chat history
+
+class ChatHistoryRequest(BaseModel):
+    user_id: str
+    limit: int = 10  # Default to 10 conversations
 
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
@@ -64,7 +69,7 @@ async def chat_endpoint(request: Request, chat: ChatRequest):
             raise HTTPException(status_code=500, detail="API configuration error. Please check server configuration.")
         
         agent = AI_Agent(api_key)
-        response = agent.get_response(chat.message)
+        response = agent.get_response(chat.message, chat.user_id)
         
         # Handle large responses more gracefully
         json_response = JSONResponse({
@@ -89,4 +94,43 @@ async def chat_endpoint(request: Request, chat: ChatRequest):
             detail = "Internal server error. Please try again later."
             
         raise HTTPException(status_code=500, detail=detail)
+
+@app.post("/api/chat-history")
+async def get_chat_history(request: Request, chat_history: ChatHistoryRequest):
+    """Get user's chat history"""
+    try:
+        api_key = os.getenv("GOOGLE_API_KEY")
+        if not api_key:
+            raise HTTPException(status_code=500, detail="API configuration error")
+        
+        agent = AI_Agent(api_key)
+        history = agent.get_user_chat_history(chat_history.user_id, chat_history.limit)
+        
+        return JSONResponse({
+            "history": history
+        })
+    except Exception as e:
+        print(f"Error in chat history endpoint: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve chat history")
+
+@app.delete("/api/chat-history")
+async def clear_chat_history(request: Request, chat_history: ChatHistoryRequest):
+    """Clear user's chat history"""
+    try:
+        api_key = os.getenv("GOOGLE_API_KEY")
+        if not api_key:
+            raise HTTPException(status_code=500, detail="API configuration error")
+        
+        agent = AI_Agent(api_key)
+        # Clear history by deleting the document
+        from firebase_admin import firestore
+        db = firestore.client()
+        db.collection("chat-history").document(chat_history.user_id).delete()
+        
+        return JSONResponse({
+            "message": "Chat history cleared successfully"
+        })
+    except Exception as e:
+        print(f"Error in clear chat history endpoint: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to clear chat history")
 

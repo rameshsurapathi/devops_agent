@@ -5,9 +5,110 @@ class DevOpsAgent {
         this.chatMessages = document.getElementById('chatMessages');
         this.chatInput = document.getElementById('chatInput');
         this.sendButton = document.getElementById('sendButton');
+        this.userId = this.getUserId();
         
         this.initEventListeners();
         this.setupQuestionCards();
+        this.loadChatHistory();
+    }
+
+    getUserId() {
+        let userId = localStorage.getItem('devops_agent_user_id');
+        if (!userId) {
+            userId = this.generateBrowserFingerprint() + '_' + Date.now();
+            localStorage.setItem('devops_agent_user_id', userId);
+        }
+        return userId;
+    }
+
+    generateBrowserFingerprint() {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        ctx.textBaseline = 'top';
+        ctx.font = '14px Arial';
+        ctx.fillText('Browser fingerprint', 2, 2);
+        
+        const fingerprint = [
+            navigator.userAgent,
+            navigator.language,
+            screen.width + 'x' + screen.height,
+            new Date().getTimezoneOffset(),
+            canvas.toDataURL()
+        ].join('|');
+        
+        return btoa(fingerprint).substring(0, 20);
+    }
+
+    async loadChatHistory() {
+        try {
+            const response = await fetch('https://devops-agent-948325778469.northamerica-northeast2.run.app/api/chat-history', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    user_id: this.userId,
+                    limit: 10  // Only request last 10 conversations
+                })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                const history = data.history || [];
+                
+                // Display the conversations (no need to slice since backend limits them)
+                const recentHistory = history;
+                recentHistory.forEach(conversation => {
+                    this.addMessage(conversation.user_message, 'user', false);
+                    this.addMessage(conversation.bot_response, 'bot', false);
+                });
+                
+                if (recentHistory.length > 0) {
+                    this.addChatHistoryIndicator();
+                }
+            }
+        } catch (error) {
+            console.log('Could not load chat history:', error);
+        }
+    }
+
+    addChatHistoryIndicator() {
+        const indicator = document.createElement('div');
+        indicator.className = 'chat-history-indicator';
+        indicator.innerHTML = `
+            <div style="text-align: center; padding: 10px; background: #f0f9ff; border-radius: 8px; margin-bottom: 1rem; font-size: 0.9rem; color: #0369a1;">
+                <i class="fas fa-history"></i> Previous conversations loaded
+                <button class="clear-history-btn" onclick="devopsAgent.clearChatHistory()" style="margin-left: 10px; padding: 2px 8px; background: #dc2626; color: white; border: none; border-radius: 4px; font-size: 0.8rem; cursor: pointer;">
+                    Clear History
+                </button>
+            </div>
+        `;
+        this.chatMessages.insertBefore(indicator, this.chatMessages.firstChild);
+    }
+
+    async clearChatHistory() {
+        if (confirm('Are you sure you want to clear your chat history? This cannot be undone.')) {
+            try {
+                const response = await fetch('https://devops-agent-948325778469.northamerica-northeast2.run.app/api/chat-history', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ user_id: this.userId })
+                });
+                
+                if (response.ok) {
+                    // Clear the chat messages
+                    this.chatMessages.innerHTML = '';
+                    showToast('Chat history cleared successfully!');
+                } else {
+                    showToast('Failed to clear chat history. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error clearing chat history:', error);
+                showToast('Failed to clear chat history. Please try again.');
+            }
+        }
     }
 
     initEventListeners() {
@@ -72,7 +173,7 @@ class DevOpsAgent {
         }
     }
 
-    addMessage(content, sender) {
+    addMessage(content, sender, shouldScroll = true) {
         const messageDiv = document.createElement('div');
         messageDiv.classList.add('message', `${sender}-message`);
         
@@ -115,12 +216,15 @@ class DevOpsAgent {
         
         this.chatMessages.appendChild(messageDiv);
         
-        // Use requestAnimationFrame to ensure DOM is updated before scrolling
-        requestAnimationFrame(() => {
-            this.scrollToBottom();
-            // Double check scroll after a brief delay to handle any layout shifts
-            setTimeout(() => this.scrollToBottom(), 200);
-        });
+        // Only scroll if shouldScroll is true (for new messages)
+        if (shouldScroll) {
+            // Use requestAnimationFrame to ensure DOM is updated before scrolling
+            requestAnimationFrame(() => {
+                this.scrollToBottom();
+                // Double check scroll after a brief delay to handle any layout shifts
+                setTimeout(() => this.scrollToBottom(), 200);
+            });
+        }
     }
 
     formatMessage(content) {
@@ -169,7 +273,6 @@ class DevOpsAgent {
 
     async callDevOpsAPI(message) {
         // Always use direct Cloud Run URL for API calls
-        // Next.js rewrites are unreliable for large responses and high API traffic
         const apiUrl = 'https://devops-agent-948325778469.northamerica-northeast2.run.app/api/chat';
         
         const response = await fetch(apiUrl, {
@@ -177,7 +280,10 @@ class DevOpsAgent {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ message: message })
+            body: JSON.stringify({ 
+                message: message,
+                user_id: this.userId 
+            })
         });
         
         if (!response.ok) {
@@ -189,7 +295,6 @@ class DevOpsAgent {
     }
 
     scrollToBottom() {
-        // Since chat messages container no longer has overflow, just scroll to the latest message
         const lastMessage = this.chatMessages.lastElementChild;
         if (lastMessage) {
             lastMessage.scrollIntoView({ 
@@ -200,11 +305,9 @@ class DevOpsAgent {
         }
     }
 
-    // Enhanced scroll method to ensure message visibility
     ensureMessageVisible() {
         const lastMessage = this.chatMessages.lastElementChild;
         if (lastMessage) {
-            // Scroll the page to show the complete message
             setTimeout(() => {
                 lastMessage.scrollIntoView({ 
                     behavior: 'smooth', 
@@ -361,8 +464,9 @@ function showToast(message) {
 }
 
 // Initialize the DevOps Agent when DOM is loaded
+let devopsAgent;
 document.addEventListener('DOMContentLoaded', () => {
-    new DevOpsAgent();
+    devopsAgent = new DevOpsAgent();
     highlightCode();
 });
 
