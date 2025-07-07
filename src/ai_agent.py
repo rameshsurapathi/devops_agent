@@ -88,10 +88,11 @@ class AI_Agent:
         
         # Store response in cache (1 month expiration)
         try:
-            db.collection("devops-agent-cache").document(cache_key).set({
-                "response": response_content,
-                "expires": datetime.now(timezone.utc) + timedelta(days=30)  # 1 month
-            })
+            if db is not None:
+                db.collection("devops-agent-cache").document(cache_key).set({
+                    "response": response_content,
+                    "expires": datetime.now(timezone.utc) + timedelta(days=30)  # 1 month
+                })
         except Exception as e:
             print(f"Warning: Failed to cache response: {e}")
         
@@ -104,6 +105,10 @@ class AI_Agent:
     def save_to_chat_history(self, user_id: str, user_message: str, bot_response: str):
         """Save chat interaction to user's history"""
         try:
+            if db is None:
+                print("Warning: Firebase not initialized, skipping chat history save")
+                return
+                
             chat_ref = db.collection("chat-history").document(user_id)
             chat_data = chat_ref.get()
             
@@ -141,6 +146,10 @@ class AI_Agent:
     def get_chat_history_context(self, user_id: str) -> str:
         """Get recent chat history for context"""
         try:
+            if db is None:
+                print("Warning: Firebase not initialized, returning empty context")
+                return ""
+                
             chat_ref = db.collection("chat-history").document(user_id)
             chat_data = chat_ref.get()
             
@@ -158,8 +167,10 @@ class AI_Agent:
                     # Format for LLM context
                     context_parts = []
                     for conv in recent_conversations:
-                        context_parts.append(f"User: {conv['user_message']}")
-                        context_parts.append(f"Assistant: {conv['bot_response'][:200]}...")  # Truncate long responses
+                        context_parts.append(f"User: {conv.get('user_message', '')}")
+                        # Truncate long responses for context
+                        bot_response = conv.get('bot_response', '')[:200]
+                        context_parts.append(f"Assistant: {bot_response}...")
                     
                     return "\n".join(context_parts)
                 else:
@@ -186,8 +197,19 @@ class AI_Agent:
                 
                 if expires and expires > datetime.now(timezone.utc):
                     conversations = data.get("conversations", [])
+                    
+                    # Convert datetime objects to ISO format strings for JSON serialization
+                    serializable_conversations = []
+                    for conv in conversations:
+                        serializable_conv = {
+                            "user_message": conv.get("user_message", ""),
+                            "bot_response": conv.get("bot_response", ""),
+                            "timestamp": conv.get("timestamp").isoformat() if conv.get("timestamp") else datetime.now(timezone.utc).isoformat()
+                        }
+                        serializable_conversations.append(serializable_conv)
+                    
                     # Return only the last 'limit' conversations
-                    return conversations[-limit:] if len(conversations) > limit else conversations
+                    return serializable_conversations[-limit:] if len(serializable_conversations) > limit else serializable_conversations
                 else:
                     # Delete expired history
                     chat_ref.delete()
