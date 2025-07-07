@@ -32,19 +32,41 @@ The DevOps AI Agent is a comprehensive solution that combines the power of Large
 - **Real-time Chat**: Smooth messaging with typing indicators
 - **Auto-scrolling**: Automatic scroll to show complete responses
 - **Mobile-Friendly**: Responsive design for all device types
+- **Chat History Management**: View, manage, and navigate conversation history
+- **Collapsible Responses**: Expandable AI responses in history view for better readability
+- **PDF Export**: Save individual bot responses as formatted PDF documents
+- **New Chat Sessions**: Start fresh conversations without losing history
+- **Persistent User Sessions**: Browser-based user identification for personalized experience
 
 ### ⚡ High-Performance Backend
 - **FastAPI**: Async Python web framework for high performance
 - **Firestore Caching**: Cloud-based NoSQL database for response caching
+- **Chat History Storage**: Persistent conversation storage with automatic expiration
+- **User-Specific Sessions**: Individual user tracking without authentication
 - **Rate Limiting**: Built-in protection against abuse
 - **Error Handling**: Comprehensive error management
 - **LangSmith Integration**: Advanced tracing and debugging
+- **JSON Serialization**: Proper datetime handling for API responses
 
 ### 🔧 DevOps-First Architecture
 - **Containerizable**: Docker-ready configuration
 - **Environment Management**: Secure environment variable handling
 - **Monitoring Ready**: Built-in health checks and logging
 - **Scalable**: Designed for production deployment
+
+### 💬 Advanced Chat Features
+- **Persistent Chat History**: Conversations stored securely in Firestore
+- **User Session Management**: Browser fingerprinting for user identification
+- **Smart History Loading**: Load recent conversations on page refresh
+- **Collapsible Chat History**: Expandable responses for efficient browsing
+- **PDF Export**: Professional PDF generation for individual responses
+- **Multiple Chat Controls**:
+  - **New Chat**: Start fresh without deleting history
+  - **View History**: Browse all past conversations in modal
+  - **Delete History**: Permanently remove all conversation data
+- **Context-Aware Responses**: AI remembers recent conversation context
+- **Auto-Expiration**: Chat history automatically expires after 7 days
+- **Optimized Storage**: Conversation limits (50 per user) for performance
 
 ## 🏗️ Project Structure
 
@@ -73,7 +95,8 @@ devops_agent/
 
 - **Python 3.13+** installed on your system
 - **Google AI API Key** (for Gemini integration)
-- **Firebase Project** (for Firestore caching)
+- **Firebase Project** (for Firestore caching and chat history)
+- **Firebase Service Account** (for authentication)
 
 ### Installation
 
@@ -93,24 +116,36 @@ devops_agent/
    pip install -r requirements.txt
    ```
 
-3. **Configure environment variables**
+3. **Set up Firebase Project**
+   - Create a new Firebase project at [Firebase Console](https://console.firebase.google.com/)
+   - Enable Firestore Database in the project
+   - Create a Service Account:
+     - Go to Project Settings → Service Accounts
+     - Click "Generate new private key"
+     - Download the JSON key file
+   - Extract the required credentials from the JSON file
+
+4. **Configure environment variables**
    ```bash
-   # Copy example environment file
-   cp src/.env.example src/.env
+   # Create environment file
+   touch src/.env
    
-   # Edit with your API keys
+   # Edit with your API keys and Firebase credentials
    nano src/.env
    ```
+   
+   See the [Environment Variables](#environment-variables) section below for required configuration.
 
-4. **Start the application**
+5. **Start the application**
    ```bash
    # Start the FastAPI server with uvicorn
    uvicorn app:app --host 0.0.0.0 --port 8000 --reload
    ```
 
-5. **Access the application**
+6. **Access the application**
    - Open your browser to `http://localhost:8000`
    - Start asking DevOps questions!
+   - Your chat history will be automatically saved and restored
 
 ## ⚙️ Configuration
 
@@ -125,7 +160,8 @@ GOOGLE_API_KEY=your_google_api_key_here
 # LLM Model Configuration
 LLM_MODEL=gemini-1.5-flash
 
-# Firebase Configuration (Required for caching)
+# Firebase Configuration (Required for chat history and caching)
+# Get these values from your Firebase Service Account JSON file
 FIREBASE_PROJECT_ID=your_firebase_project_id
 FIREBASE_PRIVATE_KEY_ID=your_private_key_id
 FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nyour_private_key_here\n-----END PRIVATE KEY-----\n"
@@ -134,7 +170,7 @@ FIREBASE_CLIENT_ID=your_client_id
 FIREBASE_AUTH_URI=https://accounts.google.com/o/oauth2/auth
 FIREBASE_TOKEN_URI=https://oauth2.googleapis.com/token
 
-# LangSmith Configuration (Optional)
+# LangSmith Configuration (Optional - for debugging)
 LANGSMITH_API_KEY=your_langsmith_api_key
 LANGSMITH_ENDPOINT=https://api.smith.langchain.com
 LANGSMITH_PROJECT=devops-agent
@@ -144,6 +180,8 @@ LANGSMITH_TRACING=true
 PORT=8000
 DEBUG=false
 ```
+
+**Note**: Without proper Firebase configuration, the chat history and caching features will not work. The application will still function for single conversations but won't persist data.
 
 ### API Configuration
 
@@ -185,13 +223,45 @@ You can also interact with the agent programmatically:
 ```python
 import requests
 
+# Send a chat message
 response = requests.post(
     "http://localhost:8000/api/chat",
-    json={"message": "How do I set up GitOps with ArgoCD?"}
+    json={
+        "message": "How do I set up GitOps with ArgoCD?",
+        "user_id": "your_user_id"  # Optional for history tracking
+    }
 )
 
 print(response.json()["response"])
+
+# Get chat history
+history_response = requests.post(
+    "http://localhost:8000/api/chat-history",
+    json={
+        "user_id": "your_user_id",
+        "limit": 10  # Number of conversations to retrieve
+    }
+)
+
+print(history_response.json()["history"])
+
+# Clear chat history
+clear_response = requests.delete(
+    "http://localhost:8000/api/chat-history",
+    json={"user_id": "your_user_id"}
+)
 ```
+
+### Chat History Management
+
+The application provides comprehensive chat history features:
+
+1. **Automatic History Loading**: Recent conversations load when you visit the page
+2. **View All History**: Click "View History" to see all past conversations
+3. **Collapsible Responses**: Click "Show Response" to expand AI answers
+4. **PDF Export**: Save any bot response as a formatted PDF
+5. **New Chat Sessions**: Start fresh while preserving history
+6. **History Cleanup**: Delete all history when needed
 
 ## 🔧 Technical Architecture
 
@@ -414,22 +484,32 @@ logging.basicConfig(
 
 ## 📝 Changelog
 
-### Version 0.1.0 (Current)
-- ✅ Initial release
+### Version 1.0.0 (Current)
+- ✅ Initial release with comprehensive features
 - ✅ FastAPI backend with AI integration
-- ✅ Modern web interface
-- ✅ Redis caching
-- ✅ Rate limiting
-- ✅ LangSmith integration
+- ✅ Modern responsive web interface
+- ✅ Firestore caching and chat history storage
+- ✅ User session management via browser fingerprinting
+- ✅ Rate limiting and comprehensive error handling
+- ✅ LangSmith integration for debugging
 - ✅ Comprehensive DevOps knowledge base
+- ✅ **Chat History Features**:
+  - Persistent conversation storage
+  - Collapsible response view in history modal
+  - Auto-loading recent conversations
+  - Context-aware responses using chat history
+- ✅ **PDF Export**: Professional PDF generation for bot responses
+- ✅ **Multiple Chat Controls**: New Chat, View History, Delete History
+- ✅ **Advanced UI**: Responsive design with smooth animations
 
 ### Planned Features
 - 🔄 Multi-model support (OpenAI, Anthropic)
-- 🔄 User authentication and sessions
-- 🔄 Conversation history
+- 🔄 User authentication and account management
 - 🔄 File upload for configuration analysis
 - 🔄 Integration with DevOps tools (GitHub, Jenkins)
 - 🔄 Advanced analytics and reporting
+- 🔄 Export conversations to multiple formats
+- 🔄 Search functionality within chat history
 
 ## 🆘 Troubleshooting
 
