@@ -113,6 +113,7 @@ class DevOpsAgent {
 
     async showChatHistoryModal() {
         try {
+            console.log('Loading full chat history for modal...');
             const response = await fetch('https://devops-agent-948325778469.northamerica-northeast2.run.app/api/chat-history', {
                 method: 'POST',
                 headers: {
@@ -123,6 +124,8 @@ class DevOpsAgent {
                     limit: 50  // Request more history for the modal
                 })
             });
+
+            console.log('Chat history response:', response);
             
             if (response.ok) {
                 const data = await response.json();
