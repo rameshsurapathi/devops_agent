@@ -41,7 +41,7 @@ class DevOpsAgent {
 
     async loadChatHistory() {
         try {
-            const response = await fetch('https://devops-agent-948325778469.northamerica-northeast2.run.app/api/chat-history', {
+            const response = await fetch('/api/chat-history', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -92,7 +92,7 @@ class DevOpsAgent {
     async clearChatHistory() {
         if (confirm('Are you sure you want to clear your chat history? This cannot be undone.')) {
             try {
-                const response = await fetch('https://devops-agent-948325778469.northamerica-northeast2.run.app/api/chat-history', {
+                const response = await fetch('/api/chat-history', {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
@@ -116,7 +116,7 @@ class DevOpsAgent {
 
     async showChatHistoryModal() {
         try {
-            const response = await fetch('https://devops-agent-948325778469.northamerica-northeast2.run.app/api/chat-history', {
+            const response = await fetch('/api/chat-history', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -391,7 +391,7 @@ class DevOpsAgent {
 
     async callDevOpsAPI(message) {
         // Always use direct Cloud Run URL for API calls
-        const apiUrl = 'https://devops-agent-948325778469.northamerica-northeast2.run.app/api/chat';
+        const apiUrl = '/api/chat';
         
         const response = await fetch(apiUrl, {
             method: 'POST',
