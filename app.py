@@ -42,7 +42,7 @@ class ChatHistoryRequest(BaseModel):
 
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="index.html")
 
 @app.post("/api/chat")
 async def chat_endpoint(request: Request, chat: ChatRequest):
@@ -108,17 +108,18 @@ async def get_chat_history(request: Request, chat_history: ChatHistoryRequest):
 
 @app.delete("/api/chat-history")
 async def clear_chat_history(request: Request, chat_history: ChatHistoryRequest):
-    """Clear user's chat history"""
+    """Clear user's chat history from R2"""
     try:
         api_key = os.getenv("GOOGLE_API_KEY")
         if not api_key:
             raise HTTPException(status_code=500, detail="API configuration error")
         
         agent = AI_Agent(api_key)
-        # Clear history by deleting the document
-        from firebase_admin import firestore
-        db = firestore.client()
-        db.collection("chat-history").document(chat_history.user_id).delete()
+        # Use storage helper to delete from R2
+        # (Assuming storage_helper has a delete method or we just overwrite with empty)
+        from src.storage_helper import R2Storage
+        storage = R2Storage()
+        storage.save_history(chat_history.user_id, [])
         
         return JSONResponse({
             "message": "Chat history cleared successfully"
