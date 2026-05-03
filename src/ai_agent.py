@@ -2,6 +2,7 @@ from typing import TypedDict, Optional, List, Dict, Any
 from langchain.chat_models import init_chat_model
 from langchain_core.messages import SystemMessage, HumanMessage
 import os
+import traceback
 from dotenv import load_dotenv
 from datetime import datetime, timezone, timedelta
 from src.prompts import SYSTEM_PROMPT
@@ -33,8 +34,9 @@ class AI_Agent:
             
             return response.content
         except Exception as e:
-            print(f"Error: {e}")
-            return "Error processing request."
+            print(f"CRITICAL ERROR in get_response: {e}")
+            traceback.print_exc()
+            return f"Error processing request: {str(e)}"
 
     def get_chat_context(self, user_id: str) -> str:
         history = self.storage.get_history(user_id)
