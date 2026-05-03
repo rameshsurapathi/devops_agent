@@ -27,7 +27,7 @@ class AI_Agent:
                 SystemMessage(content=self.system_prompt),
                 HumanMessage(content=f"Context:\n{context}\n\nQuestion: {user_message}" if context else user_message)
             ]
-            response = self.llm(messages)
+            response = self.llm.invoke(messages)
             
             if user_id:
                 self.save_chat_history(user_id, user_message, response.content)
