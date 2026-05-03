@@ -115,7 +115,9 @@ class DevOpsAgent {
     }
 
     async showChatHistoryModal() {
+        console.log('Viewing chat history...');
         try {
+            console.log('Fetching chat history for user ID:', this.userId);
             const response = await fetch('/api/chat-history', {
                 method: 'POST',
                 headers: {
@@ -127,13 +129,16 @@ class DevOpsAgent {
                 })
             });
             
+            console.log('View chat history response status:', response.status);
+            
             if (response.ok) {
                 const data = await response.json();
                 const history = data.history || [];
+                console.log(`Loaded ${history.length} history items`);
                 this.displayChatHistoryModal(history);
             } else {
                 const errorText = await response.text();
-                console.error('Error response:', errorText);
+                console.error('View chat history API error:', response.status, errorText);
                 showToast('Failed to load chat history. Please try again.');
             }
         } catch (error) {
@@ -169,7 +174,7 @@ class DevOpsAgent {
                                 </div>
                                 <div class="bot-response-container" id="response-${index}" style="display: none;">
                                     <div class="history-message bot">
-                                        <strong>AI:</strong> <span class="response-content">${conversation.bot_response}</span>
+                                        <strong>AI:</strong> <div class="response-content">${typeof marked !== 'undefined' ? marked.parse(conversation.bot_response || "") : conversation.bot_response}</div>
                                     </div>
                                 </div>
                                 <div class="history-timestamp">
